@@ -1,0 +1,207 @@
+<div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-8">
+  <!-- Formulario -->
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 mb-10">
+    <h2 class="text-2xl font-bold text-blue-600 text-center mb-6">Nueva Traducción</h2>
+    <form (ngSubmit)="createTranslation()" class="space-y-5">
+      <div>
+        <label for="sourceText" class="block text-sm font-medium text-gray-700 mb-1">Texto a traducir</label>
+        <textarea id="sourceText" [(ngModel)]="newTranslation.sourceText" name="sourceText" required rows="4"
+          placeholder="Escribe el texto aquí..."
+          class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition p-2"></textarea>
+      </div>
+      <div class="flex gap-4">
+        <div class="w-1/2">
+          <label for="sourceLang" class="block text-sm font-medium text-gray-700 mb-1">Idioma de origen</label>
+          <select id="sourceLang" [(ngModel)]="newTranslation.sourceLanguage" name="sourceLanguage"
+            class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition p-2">
+            <option value="en">Inglés</option>
+            <option value="es">Español</option>
+            <option value="fr">Francés</option>
+            <option value="de">Alemán</option>
+            <option value="it">Italiano</option>
+            <option value="pt">Portugués</option>
+            <option value="zh">Chino</option>
+            <option value="ja">Japonés</option>
+            <option value="ru">Ruso</option>
+            <option value="qu">Quechua</option>
+            <!-- Agrega más idiomas si lo deseas -->
+          </select>
+        </div>
+        <div class="w-1/2">
+          <label for="targetLang" class="block text-sm font-medium text-gray-700 mb-1">Idioma destino</label>
+          <select id="targetLang" [(ngModel)]="newTranslation.targetLanguage" name="targetLanguage"
+            class="w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition p-2">
+            <option value="en">Inglés</option>
+            <option value="es">Español</option>
+            <option value="fr">Francés</option>
+            <option value="de">Alemán</option>
+            <option value="it">Italiano</option>
+            <option value="pt">Portugués</option>
+            <option value="zh">Chino</option>
+            <option value="ja">Japonés</option>
+            <option value="ru">Ruso</option>
+            <option value="qu">Quechua</option>
+            <!-- Agrega más idiomas si lo deseas -->
+          </select>
+        </div>
+      </div>
+      <button type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg shadow transition">Traducir</button>
+    </form>
+  </div>
+
+  <!-- Historial de traducciones -->
+  <div class="w-full max-w-5xl bg-white rounded-xl shadow p-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-700">Historial de Traducciones</h3>
+      <div class="mt-2 md:mt-0 flex gap-2">
+        <button
+          class="flex items-center gap-1 px-3 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium transition"
+          (click)="loadActiveTranslations()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+          Activas
+        </button>
+        <button
+          class="flex items-center gap-1 px-3 py-1 rounded bg-yellow-100 text-yellow-700 hover:bg-yellow-200 font-medium transition"
+          (click)="loadInactiveTranslations()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="8" y1="12" x2="16" y2="12" />
+          </svg>
+          Inactivas
+        </button>
+        <button
+          class="flex items-center gap-1 px-3 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 font-medium transition"
+          (click)="loadAllTranslations()">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M8 12h8" />
+            <path d="M12 8v8" />
+          </svg>
+          Todas
+        </button>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm text-left">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="px-4 py-2">Original</th>
+            <th class="px-4 py-2">Traducción</th>
+            <th class="px-4 py-2">Idiomas</th>
+            <th class="px-4 py-2">Fecha</th>
+            <th class="px-4 py-2">Estado</th>
+            <th class="px-4 py-2">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let t of translations" class="hover:bg-blue-50 transition">
+            <td class="px-4 py-2">
+              <ng-container *ngIf="editingId === t.id; else showSourceText">
+                <input type="text" [(ngModel)]="editingSourceText"
+                  class="w-full rounded border border-gray-300 p-1 focus:ring-2 focus:ring-blue-400" />
+              </ng-container>
+              <ng-template #showSourceText>{{ t.sourceText }}</ng-template>
+            </td>
+            <td class="px-4 py-2">
+              <ng-container *ngIf="editingId === t.id; else showTranslatedText">
+                <input type="text" [(ngModel)]="editingTranslatedText"
+                  class="w-full rounded border border-gray-300 p-1 focus:ring-2 focus:ring-blue-400" />
+              </ng-container>
+              <ng-template #showTranslatedText>{{ t.translatedText }}</ng-template>
+            </td>
+            <td class="px-4 py-2">
+              <ng-container *ngIf="editingId === t.id; else showLangs">
+                <select [(ngModel)]="editingSourceLanguage" class="rounded border border-gray-300 p-1 mr-2">
+                  <option value="en">Inglés</option>
+                  <option value="es">Español</option>
+                  <option value="fr">Francés</option>
+                  <option value="de">Alemán</option>
+                  <option value="it">Italiano</option>
+                  <option value="pt">Portugués</option>
+                  <option value="zh">Chino</option>
+                  <option value="ja">Japonés</option>
+                  <option value="ru">Ruso</option>
+                  <option value="qu">Quechua</option>
+                </select>
+                <span class="mx-1">→</span>
+                <select [(ngModel)]="editingTargetLanguage" class="rounded border border-gray-300 p-1">
+                  <option value="en">Inglés</option>
+                  <option value="es">Español</option>
+                  <option value="fr">Francés</option>
+                  <option value="de">Alemán</option>
+                  <option value="it">Italiano</option>
+                  <option value="pt">Portugués</option>
+                  <option value="zh">Chino</option>
+                  <option value="ja">Japonés</option>
+                  <option value="ru">Ruso</option>
+                  <option value="qu">Quechua</option>
+                </select>
+              </ng-container>
+              <ng-template #showLangs>{{ t.sourceLanguage }} → {{ t.targetLanguage }}</ng-template>
+            </td>
+            <td class="px-4 py-2">{{ t.createdAt | date:'short' }}</td>
+            <td class="px-4 py-2">
+              <span [ngClass]="{
+                'bg-green-100 text-green-700 border border-green-300': t.status === 'ACTIVE',
+                'bg-red-100 text-red-700 border border-red-300 flex items-center gap-1': t.status === 'INACTIVE'
+              }" class="px-2 py-1 rounded text-xs font-semibold">
+                <!-- Solo icono para INACTIVE -->
+                <svg *ngIf="t.status === 'INACTIVE'" class="w-4 h-4 inline" fill="none" stroke="currentColor"
+                  stroke-width="2" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="8" y1="12" x2="16" y2="12" />
+                </svg>
+                {{ t.status }}
+              </span>
+            </td>
+            <td class="px-4 py-2 flex gap-2">
+              <ng-container *ngIf="editingId === t.id; else actionButtons">
+                <button
+                  class="flex items-center justify-center text-green-600 hover:bg-green-100 p-2 rounded transition"
+                  (click)="saveEdit(t)" title="Guardar">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+                <button class="flex items-center justify-center text-gray-600 hover:bg-gray-100 p-2 rounded transition"
+                  (click)="cancelEdit()" title="Cancelar">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </ng-container>
+              <ng-template #actionButtons>
+                <button
+                  class="flex items-center justify-center text-blue-600 bg-white border border-blue-200 p-2 rounded transition hover:bg-blue-100"
+                  (click)="editTranslation(t)" title="Editar">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13z" />
+                  </svg>
+                </button>
+                <button
+                  class="flex items-center justify-center text-red-600 bg-white border border-red-200 p-2 rounded transition hover:bg-red-100"
+                  (click)="deleteTranslation(t.id!)" title="Eliminar">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <button *ngIf="t.status === 'INACTIVE'"
+                  class="flex items-center justify-center text-green-600 bg-white border border-green-200 p-2 rounded transition hover:bg-green-100"
+                  (click)="restoreTranslation(t.id!)" title="Restaurar">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4 4v5h.582M19.418 19.418A9 9 0 116.582 6.582" />
+                  </svg>
+                </button>
+              </ng-template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
